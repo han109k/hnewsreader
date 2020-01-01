@@ -8,8 +8,13 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
+import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,15 +28,18 @@ public class MainActivity extends AppCompatActivity {
 
     private final int JSON_DOWNLOAD_REQUEST_CODE = 0;
     private final int ITEM_DOWNLOAD_REQUEST_CODE = 1;
+    private Handler handler = new Handler();
 
-    protected boolean refresh = false;
-    protected int top30 = 9;     // total Hacker News stories that will be shown ( Only  urls || Stories not included such as: show HN, ask HN )
-    protected int flak = 0;
-    protected String hnAPI = "https://hacker-news.firebaseio.com/v0/";
-    protected ArrayList<String> itemIds = new ArrayList<>();
-    protected ArrayList<String> title = new ArrayList<>();
-    protected ArrayList<String> urls = new ArrayList<>();
+    boolean refresh = false;
+    int top30 = 30;     // total Hacker News stories that will be shown ( Only  urls || Stories not included such as: show HN, ask HN )
+    int flak = 0;
+    String hnAPI = "https://hacker-news.firebaseio.com/v0/";
+    ArrayList<String> itemIds = new ArrayList<>();
+    ArrayList<String> title = new ArrayList<>();
+    ArrayList<String> urls = new ArrayList<>();
 
+    ProgressBar progressBar;
+    TextView textView;
     RecyclerViewAdapter adapter = new RecyclerViewAdapter(title, urls, this);
     SwipeRefreshLayout mSwipeRefreshLayout;
 
@@ -40,6 +48,28 @@ public class MainActivity extends AppCompatActivity {
         try {
 
             for(int i = 0; i < top30; i++){
+
+//                new Thread(new Runnable() {
+//                    int k = 0;
+//                    @Override
+//                    public void run() {
+//                        while(progressBar.getProgress() < top30) {
+//                            k++;
+//
+//                            handler.post(new Runnable() {
+//                                @Override
+//                                public void run() {
+//                                    progressBar.setProgress(k);
+//                                }
+//                            });
+//                            try {
+//                                Thread.sleep(400);
+//                            } catch (InterruptedException e){
+//                                e.printStackTrace();
+//                            }
+//                        }
+//                    }
+//                }).start();
 
                 PendingIntent pendingResult = createPendingResult(ITEM_DOWNLOAD_REQUEST_CODE, new Intent(), 0);
                 Intent intent = new Intent(getApplicationContext(), DownloadIntentService.class);
@@ -86,22 +116,28 @@ public class MainActivity extends AppCompatActivity {
 
             // title of item(i) & html context of item(i) |||||| only urls & titles included
             if(!jsonObject.isNull("url") && !jsonObject.isNull("title")){
+
+                System.out.println(jsonObject.getString("title"));
+                System.out.println(jsonObject.getString("url"));
+
                 title.add(jsonObject.getString("title"));
                 urls.add(jsonObject.getString("url"));
                 flak++;
 
-                if ( flak == top30 && !refresh){
-                    flak=0;
-                    initRecyclerView();
-
-                } else if(flak == top30){
-                    flak=0;
-                    updateRecyclerView();
-                }
-
                 // test
                 //System.out.println(jsonObject.getString("title"));
                 //System.out.println(jsonObject.getString("url"));
+            } else {
+                flak++;
+            }
+
+            if ( flak == top30 && !refresh){
+                flak=0;
+                initRecyclerView();
+
+            } else if(flak == top30){
+                flak=0;
+                updateRecyclerView();
             }
 
         } catch (Exception e) {
@@ -115,6 +151,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Log.d(TAG, "onCreate: started");
+
+        // ui
+        progressBar = findViewById(R.id.progress_circular);
+        textView = findViewById(R.id.textView);
 
         mSwipeRefreshLayout = findViewById(R.id.swipeToRefresh);
         mSwipeRefreshLayout.setColorSchemeResources(R.color.colorAccent);
@@ -131,6 +171,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
+        // backend
         initList();
     }
 
@@ -160,6 +202,9 @@ public class MainActivity extends AppCompatActivity {
     public void initRecyclerView() {
 
         Log.d(TAG, "initRecyclerView: initRecyclerView");
+
+        progressBar.animate().alpha(0).setDuration(500);
+        textView.animate().alpha(0).setDuration(500);
 
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
