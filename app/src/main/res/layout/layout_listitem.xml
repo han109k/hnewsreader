@@ -7,11 +7,11 @@
     android:padding="15dp"
     android:id="@+id/parent_layout">
 
-
     <TextView
         android:id="@+id/textName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textStyle="bold"
         android:text="Test Test"
         android:textColor="#000"
         android:textSize="18sp"

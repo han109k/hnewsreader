@@ -22,13 +22,12 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements RecyclerViewAdapter.OnNewsListener {
 
     private static final String TAG = "MainActivity";
 
     private final int JSON_DOWNLOAD_REQUEST_CODE = 0;
     private final int ITEM_DOWNLOAD_REQUEST_CODE = 1;
-    private Handler handler = new Handler();
 
     boolean refresh = false;
     int top30 = 30;     // total Hacker News stories that will be shown ( Only  urls || Stories not included such as: show HN, ask HN )
@@ -40,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
 
     ProgressBar progressBar;
     TextView textView;
-    RecyclerViewAdapter adapter = new RecyclerViewAdapter(title, urls, this);
+    RecyclerViewAdapter adapter = new RecyclerViewAdapter(title, this);
     SwipeRefreshLayout mSwipeRefreshLayout;
 
     public void parseTitleAndContext() {
@@ -48,28 +47,6 @@ public class MainActivity extends AppCompatActivity {
         try {
 
             for(int i = 0; i < top30; i++){
-
-//                new Thread(new Runnable() {
-//                    int k = 0;
-//                    @Override
-//                    public void run() {
-//                        while(progressBar.getProgress() < top30) {
-//                            k++;
-//
-//                            handler.post(new Runnable() {
-//                                @Override
-//                                public void run() {
-//                                    progressBar.setProgress(k);
-//                                }
-//                            });
-//                            try {
-//                                Thread.sleep(400);
-//                            } catch (InterruptedException e){
-//                                e.printStackTrace();
-//                            }
-//                        }
-//                    }
-//                }).start();
 
                 PendingIntent pendingResult = createPendingResult(ITEM_DOWNLOAD_REQUEST_CODE, new Intent(), 0);
                 Intent intent = new Intent(getApplicationContext(), DownloadIntentService.class);
@@ -233,4 +210,11 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
+    @Override
+    public void onNewsClick(int position) {
+        Intent intent = new Intent(this, WebActivity.class);
+        intent.putExtra("content", urls.get(position));
+        intent.putExtra("title", title.get(position));
+        startActivity(intent);
+    }
 }

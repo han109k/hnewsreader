@@ -1,6 +1,7 @@
 package com.example.hnnewsreader;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -38,6 +39,8 @@ public class WebActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_web);
 
+        setSupportActionBar((Toolbar) findViewById(R.id.web_toolbar));
+
         WebView webView = findViewById(R.id.webView);
 
         webView.getSettings().setJavaScriptEnabled(true);
@@ -45,6 +48,8 @@ public class WebActivity extends AppCompatActivity {
         webView.setWebViewClient(new WebViewClient());
 
         Intent intent = getIntent();
+
+        setTitle(intent.getStringExtra("title"));
 
         webView.loadUrl(intent.getStringExtra("content"));
     }
